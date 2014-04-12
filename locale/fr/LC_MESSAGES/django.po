@@ -1,0 +1,5 @@
+msgid "Django administration"
+msgstr "Lombric Park"
+
+msgid "Django site admin"
+msgstr "Lombric Park"

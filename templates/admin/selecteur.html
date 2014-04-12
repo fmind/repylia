@@ -1,0 +1,103 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% load thumbnail %}
+
+{% block title %}{% trans 'Django site admin' %}{% endblock %}
+
+{% block extrastyle %}
+	{{ block.super }}
+	<link rel="stylesheet" type="text/css" href="{% load adminmedia %}{% admin_media_prefix %}css/dashboard.css" />
+	<style type="text/css">
+		.center {
+			text-align: center;
+		}
+		.animal {
+			float: left;
+			padding: 10px 15px;
+		}
+		.animal.selected {
+			border: dashed green 1px;
+		}
+		.animal .nom {
+			font-size: 15px;
+			font-weight: bold;
+		}
+		.action {
+		    margin: 0px 30px;
+		}
+	</style>
+{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+	<div class="animal-list">
+	{% for serpent in serpents %}
+		<div class="animal center {% if request.session.serpent == serpent %}selected{% endif %}">
+			<a href="serpent/select/{{ serpent.id }}">
+			{% thumbnail serpent.image "125x125" crop="center" as img %}
+				<img src="{{ img.url }}" width="125" height="125" alt="{{ serpent.nom }}" title="{{ serpent.nom }}"/>
+			{% empty %}
+				<img src="{{ STATIC_URL }}images/serpent_defaut.png" width="125" height="125" alt="{{ serpent.nom }}" title="{{ serpent.nom }}" />
+			{% endthumbnail %}
+			</a>
+			<br />
+			<a href="serpent/select/{{ serpent.id }}" class="nom">{{ serpent }}</a>
+		</div>
+	{% endfor %}
+	    <br class="clear" />
+	    <br /><hr />
+	    <div class="animal center action">
+	        <a href="serpent/serpent/add">
+	            <img src="{{STATIC_URL}}/images/plus_add_green.png" width="125" height="125" alt="Ajouter un serpent" />
+	        </a>
+	        <br />
+			<a href="serpent/serpent/add" class="nom">Ajouter un serpent</a>
+	    </div>
+	    <div class="animal center action">
+	        <a href="serpent/serpent/">
+	            <img src="{{STATIC_URL}}/images/serpents_gerer.png" width="125" height="125" alt="Gérer mes serpents" />
+	        </a>
+	        <br />
+			<a href="serpent/serpent/" class="nom">Gérer mes serpents</a>
+	    </div>
+	</div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module" id="recent-actions-module">
+        <h2>{% trans 'Recent Actions' %}</h2>
+        <h3>{% trans 'My Actions' %}</h3>
+            {% load log %}
+            {% get_admin_log 10 as admin_log for_user user %}
+            {% if not admin_log %}
+            <p>{% trans 'None available' %}</p>
+            {% else %}
+            <ul class="actionlist">
+            {% for entry in admin_log %}
+            <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+                {% if entry.is_deletion or not entry.get_admin_url %}
+                    {{ entry.object_repr }}
+                {% else %}
+                    <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                {% endif %}
+                <br/>
+                {% if entry.content_type %}
+                    <span class="mini quiet">{% filter capfirst %}{% trans entry.content_type.name %}{% endfilter %}</span>
+                {% else %}
+                    <span class="mini quiet">{% trans 'Unknown content' %}</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+    </div>
+</div>
+{% endblock %}
